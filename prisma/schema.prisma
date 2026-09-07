@@ -1,0 +1,167 @@
+// ReUse! - Plataforma web de troca e doação de itens
+// Schema Prisma responsável por modelar o domínio da aplicação.
+// Banco de dados: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------
+
+enum CondicaoItem {
+  NOVO
+  SEMINOVO
+  USADO
+}
+
+enum StatusItem {
+  DISPONIVEL
+  RESERVADO
+  TROCADO
+}
+
+enum StatusTroca {
+  PENDENTE
+  ACEITA
+  RECUSADA
+  CONCLUIDA
+}
+
+// ------------------------------------------------------------------
+// MODELOS
+// ------------------------------------------------------------------
+
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  telefone  String?
+  cidade    String
+  bairro    String?
+  avatarUrl String?
+  criadoEm  DateTime @default(now())
+
+  // Um usuário pode publicar vários itens
+  itens Item[]
+
+  // Um usuário pode solicitar várias trocas
+  trocasSolicitadas Troca[] @relation("TrocaSolicitante")
+
+  // Avaliações que o usuário fez sobre outras pessoas
+  avaliacoesFeitas Avaliacao[] @relation("AvaliacaoAvaliador")
+
+  // Avaliações que o usuário recebeu de outras pessoas
+  avaliacoesRecebidas Avaliacao[] @relation("AvaliacaoAvaliado")
+
+  // Mensagens enviadas em conversas de troca
+  mensagens Mensagem[]
+
+  @@index([cidade])
+  @@map("usuarios")
+}
+
+model Categoria {
+  id        String   @id @default(cuid())
+  nome      String   @unique
+  descricao String?
+  icone     String?  @default("📦")
+  criadoEm  DateTime @default(now())
+
+  itens Item[]
+
+  @@map("categorias")
+}
+
+model Item {
+  id          String       @id @default(cuid())
+  titulo      String
+  descricao   String
+  condicao    CondicaoItem @default(USADO)
+  status      StatusItem   @default(DISPONIVEL)
+  cidade      String
+  bairro      String?
+  fotoUrl     String?
+  criadoEm    DateTime     @default(now())
+  atualizadoEm DateTime    @updatedAt
+
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId  String
+
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  categoriaId String
+
+  // Trocas em que este item foi o item OFERECIDO por quem solicitou
+  trocasComoOferecido Troca[] @relation("TrocaItemOferecido")
+
+  // Trocas em que este item foi o item DESEJADO (pertence ao dono original)
+  trocasComoDesejado Troca[] @relation("TrocaItemDesejado")
+
+  @@index([categoriaId])
+  @@index([status])
+  @@index([cidade, bairro])
+  @@map("itens")
+}
+
+model Troca {
+  id          String      @id @default(cuid())
+  mensagem    String?
+  status      StatusTroca @default(PENDENTE)
+  criadoEm    DateTime    @default(now())
+  atualizadoEm DateTime   @updatedAt
+
+  solicitante   Usuario @relation("TrocaSolicitante", fields: [solicitanteId], references: [id], onDelete: Cascade)
+  solicitanteId String
+
+  itemOferecido   Item   @relation("TrocaItemOferecido", fields: [itemOferecidoId], references: [id])
+  itemOferecidoId String
+
+  itemDesejado   Item   @relation("TrocaItemDesejado", fields: [itemDesejadoId], references: [id])
+  itemDesejadoId String
+
+  mensagens   Mensagem[]
+  avaliacoes  Avaliacao[]
+
+  @@index([status])
+  @@map("trocas")
+}
+
+model Mensagem {
+  id       String   @id @default(cuid())
+  texto    String
+  criadoEm DateTime @default(now())
+
+  troca   Troca  @relation(fields: [trocaId], references: [id], onDelete: Cascade)
+  trocaId String
+
+  autor   Usuario @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  autorId String
+
+  @@index([trocaId])
+  @@map("mensagens")
+}
+
+model Avaliacao {
+  id         String   @id @default(cuid())
+  nota       Int      @default(5)
+  comentario String?
+  criadoEm   DateTime @default(now())
+
+  avaliador   Usuario @relation("AvaliacaoAvaliador", fields: [avaliadorId], references: [id], onDelete: Cascade)
+  avaliadorId String
+
+  avaliado   Usuario @relation("AvaliacaoAvaliado", fields: [avaliadoId], references: [id], onDelete: Cascade)
+  avaliadoId String
+
+  troca   Troca?  @relation(fields: [trocaId], references: [id])
+  trocaId String?
+
+  @@index([avaliadoId])
+  @@map("avaliacoes")
+}
