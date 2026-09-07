@@ -1,12 +1,20 @@
 "use client";
 
 export default function ErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  const bancoIndisponivel = /Can't reach database server|Environment variable not found|P1001/.test(
+    error.message,
+  );
+
   return (
     <div className="rounded-xl2 bg-red-50 p-8 text-center">
       <p className="text-3xl">⚠️</p>
-      <h2 className="mt-2 text-lg font-bold text-red-800">Algo deu errado</h2>
+      <h2 className="mt-2 text-lg font-bold text-red-800">
+        {bancoIndisponivel ? "Banco de dados indisponível" : "Algo deu errado"}
+      </h2>
       <p className="mt-1 text-sm text-red-700">
-        {error.message || "Não foi possível carregar esta página. Verifique a conexão com o banco de dados."}
+        {bancoIndisponivel
+          ? "Inicie o PostgreSQL local e tente novamente."
+          : "Não foi possível carregar esta página. Tente novamente."}
       </p>
       <button
         onClick={reset}

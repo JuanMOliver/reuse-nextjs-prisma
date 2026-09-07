@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import ItemCard from "@/components/ItemCard";
 import StatsBar from "@/components/StatsBar";
@@ -9,25 +10,53 @@ import SearchForm from "@/components/SearchForm";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [totalUsuarios, totalItens, totalTrocasConcluidas, itensRecentes, categorias] =
-    await Promise.all([
-      prisma.usuario.count(),
-      prisma.item.count({ where: { status: "DISPONIVEL" } }),
-      prisma.troca.count({ where: { status: "CONCLUIDA" } }),
-      prisma.item.findMany({
-        where: { status: "DISPONIVEL" },
-        orderBy: { criadoEm: "desc" },
-        take: 6,
-        include: { categoria: true },
-      }),
-      prisma.categoria.findMany({
-        orderBy: { nome: "asc" },
-        take: 8,
-      }),
-    ]);
+  let bancoIndisponivel = false;
+  let totalUsuarios = 0;
+  let totalItens = 0;
+  let totalTrocasConcluidas = 0;
+  let itensRecentes: Prisma.ItemGetPayload<{ include: { categoria: true } }>[] = [];
+  let categorias: Awaited<ReturnType<typeof prisma.categoria.findMany>> = [];
+
+  try {
+    [totalUsuarios, totalItens, totalTrocasConcluidas, itensRecentes, categorias] =
+      await Promise.all([
+        prisma.usuario.count(),
+        prisma.item.count({ where: { status: "DISPONIVEL" } }),
+        prisma.troca.count({ where: { status: "CONCLUIDA" } }),
+        prisma.item.findMany({
+          where: { status: "DISPONIVEL" },
+          orderBy: { criadoEm: "desc" },
+          take: 6,
+          include: { categoria: true },
+        }),
+        prisma.categoria.findMany({
+          orderBy: { nome: "asc" },
+          take: 8,
+        }),
+      ]);
+  } catch (error) {
+    const mensagem = error instanceof Error ? error.message : "";
+    const bancoOffline = /Can't reach database server|Environment variable not found|P1001/.test(
+      mensagem,
+    );
+
+    if (!bancoOffline) {
+      throw error;
+    }
+
+    bancoIndisponivel = true;
+  }
 
   return (
     <div className="space-y-12">
+      {bancoIndisponivel && (
+        <div className="rounded-xl2 border border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-900">
+          <p className="font-semibold">Banco de dados indisponível</p>
+          <p className="mt-1">
+            Inicie o PostgreSQL local e atualize a página para carregar os itens e indicadores.
+          </p>
+        </div>
+      )}
       <section className="rounded-xl2 bg-gradient-to-br from-reuse-600 to-reuse-800 px-6 py-12 text-white sm:px-10">
         <p className="text-sm font-semibold uppercase tracking-widest text-reuse-100">
           Economia circular · consumo consciente
