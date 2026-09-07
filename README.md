@@ -1,9 +1,7 @@
-# ♻️ ReUse! — Plataforma Web (Next.js + Prisma ORM + PostgreSQL)
+# ♻️ ReUse! — Plataforma Web
 
-Versão web da plataforma **ReUse!**, focada em troca e doação de itens para incentivar o
-consumo consciente e a economia circular. Este repositório contém **apenas as telas mais
-relevantes** para uma via de acesso alternativa (web) ao app mobile já existente — não é uma
-réplica completa do mobile.
+Plataforma para troca e doação de itens, desenvolvida com Next.js, Prisma ORM e PostgreSQL,
+com foco em consumo consciente e economia circular.
 
 ## Stack
 
@@ -15,7 +13,7 @@ réplica completa do mobile.
 | Banco de dados| PostgreSQL 16                       |
 | Validação     | Zod                                  |
 
-## Telas desenvolvidas
+## Funcionalidades
 
 | Rota                  | Objetivo                                                                 |
 |-----------------------|---------------------------------------------------------------------------|
@@ -28,9 +26,8 @@ réplica completa do mobile.
 | `/perfil/[id]`        | Perfil público do usuário: itens publicados e avaliações recebidas.      |
 | `/minhas-trocas`      | Painel (kanban) de propostas de troca: aceitar, recusar, concluir, avaliar. |
 
-Além das telas, o projeto expõe uma **API interna** (`/api/itens`, `/api/categorias`,
-`/api/trocas`) que reaproveita o mesmo Prisma Client — útil para uma futura integração com o
-app mobile ou com outros consumidores.
+O projeto também expõe uma **API interna** (`/api/itens`, `/api/categorias`, `/api/trocas`)
+que utiliza o mesmo Prisma Client.
 
 ## Estrutura do repositório
 
@@ -80,7 +77,7 @@ npx prisma generate
 # 5. Rodar as migrations (cria as tabelas no banco)
 npx prisma migrate dev --name init
 
-# 6. Popular o banco com dados de demonstração
+# 6. Popular o banco com dados iniciais
 npx prisma db seed
 
 # 7. Iniciar o servidor de desenvolvimento
@@ -91,18 +88,27 @@ Acesse **http://localhost:3000**.
 
 Para inspecionar o banco visualmente: `npx prisma studio`.
 
-## Limitações e próximos passos (transparência de escopo)
+## Limitações e próximos passos
 
-- **Autenticação:** o protótipo ainda não possui login real. Ações que dependem de um usuário
-  logado (cadastrar item, propor troca, avaliar) usam um **usuário de demonstração** fixo
-  (`DEMO_USER_EMAIL`), documentado em `src/lib/session.ts`. Próximo passo natural seria
-  integrar NextAuth.js.
+- **Autenticação:** ainda não há login real. Ações que dependem de um usuário logado (cadastrar
+  item, propor troca e avaliar) usam o usuário definido em `DEMO_USER_EMAIL`. A integração com
+  um provedor de autenticação é o próximo passo recomendado.
 - **Upload de imagem:** o campo de foto aceita apenas uma URL; não há upload de arquivo binário.
 - **Notificações e chat completo:** o modelo `Mensagem` já existe no banco (pensando em
   evolução futura de um chat entre usuários dentro de uma troca), mas a tela de conversa
-  completa não foi implementada nesta entrega — o foco foi cobrir os 3 critérios da atividade
-  (Next.js, Prisma, banco de dados) com profundidade.
+  completa ainda não foi implementada.
+
+## Publicação
+
+Para publicar a aplicação, use um serviço compatível com Next.js, como a Vercel, e um serviço
+gerenciado de PostgreSQL, como Neon, Supabase ou Railway.
+
+1. Crie um banco PostgreSQL e copie a URL de conexão.
+2. Importe este repositório na Vercel.
+3. Configure as variáveis `DATABASE_URL` e `DEMO_USER_EMAIL` no projeto da Vercel.
+4. Execute `npx prisma migrate deploy` apontando para o banco de produção.
+5. Faça um novo deploy e verifique a URL gerada pela Vercel.
 
 ## Licença
 
-Projeto acadêmico, sem fins comerciais.
+Uso educacional e não comercial.
