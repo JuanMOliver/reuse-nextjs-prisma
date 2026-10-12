@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import ts from 'typescript';
+const source=fs.readFileSync(new URL('../lib/items.ts',import.meta.url),'utf8');
+const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+const m={exports:{}};new Function('module','exports','require',js)(m,m.exports,()=>{throw Error('Sem dependências externas')});
+const {seed,findItems,validateItem}=m.exports;
+test('carrega 5 anúncios demonstrativos',()=>assert.equal(seed.length,5));
+test('pesquisa e filtro por status',()=>{assert.equal(findItems(seed,'bicicleta','all','all').length,1);assert.equal(findItems(seed,'','paused','all').length,1);});
+test('filtra por categoria',()=>assert.equal(findItems(seed,'','all','Livros').length,1));
+test('valida cadastro',()=>{assert.ok(validateItem({title:'A',description:'A',category:'Livros',condition:'Bom estado',city:'SP',imageUrl:''}));assert.equal(validateItem({title:'Livro fotográfico',description:'Livro com fotos e dicas de fotografia.',category:'Livros',condition:'Bom estado',city:'São Paulo',imageUrl:''}),null);});
