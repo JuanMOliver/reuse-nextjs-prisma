@@ -9,6 +9,10 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    // Use a conexao com pool nas funcoes serverless, preservando DATABASE_URL direta para migracoes.
+    ...(process.env.DATABASE_URL_POOLED
+      ? { datasources: { db: { url: process.env.DATABASE_URL_POOLED } } }
+      : {}),
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 
