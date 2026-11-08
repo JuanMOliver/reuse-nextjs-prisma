@@ -7,7 +7,7 @@ com foco em consumo consciente e economia circular.
 
 | Camada        | Tecnologia                          |
 |---------------|--------------------------------------|
-| Framework web | Next.js 14 (App Router, TypeScript) |
+| Framework web | Next.js 16 (App Router, TypeScript, React 19) |
 | Estilização   | Tailwind CSS                        |
 | ORM           | Prisma ORM                          |
 | Banco de dados| PostgreSQL 16                       |
@@ -106,8 +106,8 @@ gerenciado de PostgreSQL, como Neon, Supabase ou Railway.
 1. Crie um banco PostgreSQL e copie a URL de conexão.
 2. Importe este repositório na Vercel.
 3. Configure as variáveis `DATABASE_URL` e `DEMO_USER_EMAIL` no projeto da Vercel.
-4. Execute `npx prisma migrate deploy` apontando para o banco de produção.
-5. Faça um novo deploy e verifique a URL gerada pela Vercel.
+4. Execute `npm run db:deploy` apontando para o banco de produção (conexão direta, com TLS).
+5. Faça um novo deploy e verifique `/api/health`, `/api/itens`, `/categorias` e `/minhas-trocas`. O healthcheck só retorna 200 se o banco responder à consulta SQL. Veja `docs/DEPLOY_FINAL_2026.md`.
 
 ## Licença
 
