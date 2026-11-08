@@ -1,3 +1,4 @@
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -5,7 +6,7 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 // GET /api/trocas?usuarioId=... - lista trocas de um usuário (solicitadas ou recebidas)
-export async function GET(request: NextRequest) {
+async function listarTrocas(request: NextRequest) {
   const usuarioId = new URL(request.url).searchParams.get("usuarioId");
 
   if (!usuarioId) {
@@ -45,4 +46,13 @@ export async function POST(request: NextRequest) {
 
   const troca = await prisma.troca.create({ data: parsed.data });
   return NextResponse.json({ troca }, { status: 201 });
+}
+
+export async function GET(request: NextRequest) {
+  try { return await listarTrocas(request); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return NextResponse.json({erro:"Banco de dados indisponivel",codigo:"DATABASE_UNAVAILABLE",modo:"producao",persistencia:false,demonstracao:"/api/demo/itens"},
+      {status:503,headers:{"Cache-Control":"no-store"}});
+  }
 }

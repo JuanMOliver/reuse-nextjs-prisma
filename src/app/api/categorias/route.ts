@@ -1,10 +1,11 @@
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/categorias - lista categorias com a contagem de itens disponíveis
-export async function GET() {
+async function listarCategorias() {
   const categorias = await prisma.categoria.findMany({
     orderBy: { nome: "asc" },
     include: {
@@ -13,4 +14,13 @@ export async function GET() {
   });
 
   return NextResponse.json({ categorias });
+}
+
+export async function GET() {
+  try { return await listarCategorias(); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return NextResponse.json({erro:"Banco de dados indisponivel",codigo:"DATABASE_UNAVAILABLE",modo:"producao",persistencia:false,demonstracao:"/api/demo/itens"},
+      {status:503,headers:{"Cache-Control":"no-store"}});
+  }
 }

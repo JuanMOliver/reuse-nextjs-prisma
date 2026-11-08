@@ -1,3 +1,4 @@
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 // GET /api/itens?categoriaId=...&cidade=...&q=...
 // Disponibiliza a listagem de itens como API interna, útil para
 // integrações futuras (ex: consumo pelo app mobile do ReUse!).
-export async function GET(request: NextRequest) {
+async function listarItens(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
   const itens = await prisma.item.findMany({
@@ -58,4 +59,13 @@ export async function POST(request: NextRequest) {
 
   const item = await prisma.item.create({ data: parsed.data });
   return NextResponse.json({ item }, { status: 201 });
+}
+
+export async function GET(request: NextRequest) {
+  try { return await listarItens(request); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return NextResponse.json({erro:"Banco de dados indisponivel",codigo:"DATABASE_UNAVAILABLE",modo:"producao",persistencia:false,demonstracao:"/api/demo/itens"},
+      {status:503,headers:{"Cache-Control":"no-store"}});
+  }
 }
