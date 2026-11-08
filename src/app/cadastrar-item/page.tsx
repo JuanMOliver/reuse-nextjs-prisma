@@ -1,9 +1,11 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
 import { cadastrarItem } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function CadastrarItemPage({
+async function ConteudoCadastrarItemPage({
   searchParams,
 }: {
   searchParams: { sucesso?: string; erro?: string };
@@ -128,4 +130,12 @@ export default async function CadastrarItemPage({
       </form>
     </div>
   );
+}
+
+export default async function CadastrarItemPage(props: Parameters<typeof ConteudoCadastrarItemPage>[0]) {
+  try { return await ConteudoCadastrarItemPage(props); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

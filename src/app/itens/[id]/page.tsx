@@ -1,3 +1,5 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -7,7 +9,7 @@ import { proporTroca } from "@/app/actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function ItemDetalhePage({ params }: { params: { id: string } }) {
+async function ConteudoItemDetalhePage({ params }: { params: { id: string } }) {
   const item = await prisma.item.findUnique({
     where: { id: params.id },
     include: {
@@ -147,4 +149,12 @@ export default async function ItemDetalhePage({ params }: { params: { id: string
       )}
     </div>
   );
+}
+
+export default async function ItemDetalhePage(props: Parameters<typeof ConteudoItemDetalhePage>[0]) {
+  try { return await ConteudoItemDetalhePage(props); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

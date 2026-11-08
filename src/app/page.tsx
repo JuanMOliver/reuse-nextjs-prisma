@@ -53,7 +53,7 @@ export default async function HomePage() {
         <div className="rounded-xl2 border border-amber-200 bg-amber-50 px-6 py-4 text-sm text-amber-900">
           <p className="font-semibold">Banco de dados indisponível</p>
           <p className="mt-1">
-            Inicie o PostgreSQL local e atualize a página para carregar os itens e indicadores.
+            O banco PostgreSQL de produção está indisponível. Use a demonstração online para visualizar o catálogo; as operações reais exigem a conexão com o banco.
           </p>
         </div>
       )}
@@ -115,8 +115,7 @@ export default async function HomePage() {
         </div>
         {itensRecentes.length === 0 ? (
           <p className="text-sm text-reuse-600">
-            Nenhum item cadastrado ainda. Rode <code>npx prisma db seed</code> para popular o banco
-            de demonstração.
+            Nenhum item disponível neste momento. Você pode visitar o catálogo demonstrativo.
           </p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

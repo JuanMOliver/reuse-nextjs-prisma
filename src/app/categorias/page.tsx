@@ -1,9 +1,11 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoriasPage() {
+async function ConteudoCategoriasPage() {
   const categorias = await prisma.categoria.findMany({
     orderBy: { nome: "asc" },
     include: {
@@ -37,4 +39,12 @@ export default async function CategoriasPage() {
       </div>
     </div>
   );
+}
+
+export default async function CategoriasPage() {
+  try { return await ConteudoCategoriasPage(); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

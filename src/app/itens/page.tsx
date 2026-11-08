@@ -1,3 +1,5 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ItemCard from "@/components/ItemCard";
@@ -16,7 +18,7 @@ type SearchParams = {
   page?: string;
 };
 
-export default async function ItensPage({ searchParams }: { searchParams: SearchParams }) {
+async function ConteudoItensPage({ searchParams }: { searchParams: SearchParams }) {
   const page = Math.max(1, Number(searchParams.page ?? 1));
 
   const where: Prisma.ItemWhereInput = {
@@ -111,4 +113,12 @@ export default async function ItensPage({ searchParams }: { searchParams: Search
       )}
     </div>
   );
+}
+
+export default async function ItensPage(props: Parameters<typeof ConteudoItensPage>[0]) {
+  try { return await ConteudoItensPage(props); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

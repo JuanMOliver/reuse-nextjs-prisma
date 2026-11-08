@@ -1,10 +1,12 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
 import SearchForm from "@/components/SearchForm";
 import ItemCard from "@/components/ItemCard";
 
 export const dynamic = "force-dynamic";
 
-export default async function BuscaPage({
+async function ConteudoBuscaPage({
   searchParams,
 }: {
   searchParams: { q?: string; categoriaId?: string; cidade?: string };
@@ -90,4 +92,12 @@ export default async function BuscaPage({
       )}
     </div>
   );
+}
+
+export default async function BuscaPage(props: Parameters<typeof ConteudoBuscaPage>[0]) {
+  try { return await ConteudoBuscaPage(props); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

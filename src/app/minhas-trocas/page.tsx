@@ -1,3 +1,5 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
 import { getUsuarioDemo } from "@/lib/session";
 import { atualizarStatusTroca, avaliarUsuario } from "@/app/actions";
@@ -7,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const COLUNAS = ["PENDENTE", "ACEITA", "CONCLUIDA", "RECUSADA"] as const;
 
-export default async function MinhasTrocasPage() {
+async function ConteudoMinhasTrocasPage() {
   const usuario = await getUsuarioDemo();
 
   const trocas = await prisma.troca.findMany({
@@ -119,4 +121,12 @@ export default async function MinhasTrocasPage() {
       </div>
     </div>
   );
+}
+
+export default async function MinhasTrocasPage() {
+  try { return await ConteudoMinhasTrocasPage(); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }

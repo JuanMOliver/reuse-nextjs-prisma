@@ -13,7 +13,7 @@ export default function ErrorBoundary({ error, reset }: { error: Error; reset: (
       </h2>
       <p className="mt-1 text-sm text-red-700">
         {bancoIndisponivel
-          ? "Inicie o PostgreSQL local e tente novamente."
+          ? "A conexão PostgreSQL de produção precisa ser restaurada. Consulte o catálogo demonstrativo enquanto isso."
           : "Não foi possível carregar esta página. Tente novamente."}
       </p>
       <button

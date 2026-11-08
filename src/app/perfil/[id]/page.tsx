@@ -1,3 +1,5 @@
+import DatabaseUnavailable from "@/components/DatabaseUnavailable";
+import { isDatabaseUnavailable } from "@/lib/db-errors";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ItemCard from "@/components/ItemCard";
@@ -5,7 +7,7 @@ import { formatarData } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function PerfilPage({ params }: { params: { id: string } }) {
+async function ConteudoPerfilPage({ params }: { params: { id: string } }) {
   const usuario = await prisma.usuario.findUnique({
     where: { id: params.id },
     include: {
@@ -97,4 +99,12 @@ export default async function PerfilPage({ params }: { params: { id: string } })
       </section>
     </div>
   );
+}
+
+export default async function PerfilPage(props: Parameters<typeof ConteudoPerfilPage>[0]) {
+  try { return await ConteudoPerfilPage(props); }
+  catch(error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    return <DatabaseUnavailable />;
+  }
 }
