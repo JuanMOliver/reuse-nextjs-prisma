@@ -76,6 +76,12 @@ export default async function HomePage() {
             Ver itens disponíveis
           </Link>
           <Link
+            href="/demo"
+            className="rounded-full border border-white/60 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Explorar demo online
+          </Link>
+          <Link
             href="/cadastrar-item"
             className="rounded-full border border-white/60 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
           >
